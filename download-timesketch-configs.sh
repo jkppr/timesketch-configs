@@ -14,7 +14,7 @@ GITHUB_TS_BASE_URL="https://raw.githubusercontent.com/google/timesketch/master"
 GITHUB_TS_MOD_URL="https://raw.githubusercontent.com/jkppr/timesketch-configs/main"
 # Fetch default & modified Timesketch config files
 wget $GITHUB_TS_MOD_URL/data/timesketch.conf -O configs/timesketch.conf
-wget https://raw.githubusercontent.com/blueteam0ps/AllthingsTimesketch/master/tags.yaml -O configs/tags.yaml
+wget $GITHUB_TS_MOD_URL/data/tags.yaml -O configs/tags.yaml
 wget $GITHUB_TS_BASE_URL/data/plaso.mappings -O configs/plaso.mappings
 wget $GITHUB_TS_BASE_URL/data/plaso_formatters.yaml -O configs/plaso_formatters.yaml
 wget $GITHUB_TS_BASE_URL/data/generic.mappings -O configs/generic.mappings
