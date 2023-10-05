@@ -40,7 +40,7 @@
 ## Virustotal Example:
 virustotal:
   short_name: 'VirusTotal'
-  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'domain']
+  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'domain', 'ip_address', 'host']
   context_link: 'https://www.virustotal.com/gui/search/<ATTR_VALUE>'
   redirect_warning: TRUE
 
@@ -52,18 +52,18 @@ mseventid:
 
 urlscanio:
   short_name: 'urlscan.io'
-  match_fields: ['url', 'uri', 'original_url']
+  match_fields: ['url', 'uri', 'original_url', 'host', 'domain']
   context_link: 'https://urlscan.io/search/#<ATTR_VALUE>'
   redirect_warning: TRUE
 
 urlhaus:
   short_name: 'URLhaus'
-  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url']
+  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'ip_address', 'host', 'domain']
   context_link: 'https://urlhaus.abuse.ch/browse.php?search=<ATTR_VALUE>'
   redirect_warning: TRUE
 
 alienvault:
   short_name: 'alienvault OTX'
-  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'domain', 'ipv4']
+  match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'domain', 'ipv4', 'ip_address', 'host', 'domain']
   context_link: 'https://otx.alienvault.com/browse/global/pulses?q=<ATTR_VALUE>'
   redirect_warning: TRUE
