@@ -17,6 +17,7 @@ packages=(
   gnupg
   curl
   sudo
+  git
 )
 
 err() {
