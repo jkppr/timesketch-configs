@@ -99,10 +99,17 @@ hardcoded_modules:
       - sha1
       - md5_hash
       - md5
+      - filename
 
 ## External Services
 linked_services:
 ### Virustotal Example:
+  translate:
+    short_name: 'Translate'
+    match_fields: ['title','body']
+    context_link: 'https://translate.google.com/?sl=auto&tl=en&op=translate&text=<ATTR_VALUE>'
+    redirect_warning: TRUE
+
   virustotal:
     short_name: 'VirusTotal'
     match_fields: ['hash', 'sha256_hash', 'sha256', 'sha1_hash', 'sha1', 'md5_hash', 'md5', 'url', 'domain', 'ip_address', 'host']
