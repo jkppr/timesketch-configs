@@ -16,6 +16,7 @@ packages=(
   curl
   sudo
   git
+  python3-poetry
 )
 
 err() {
