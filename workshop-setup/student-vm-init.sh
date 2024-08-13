@@ -8,10 +8,8 @@ max_retry=100
 
 # Default packages to install
 packages=(
-  kubectl
   tmux
   python3-pip
-  google-cloud-sdk-gke-gcloud-auth-plugin
   apt-transport-https
   ca-certificates
   gnupg
@@ -37,7 +35,7 @@ apt update && apt upgrade -y
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
 # Try to install the packages
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install default packages ..." >> /startup-script-status.log
+echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install apt packages ..." >> /startup-script-status.log
 exit_code=1
 for try in $(seq 1 ${max_retry}); do
   [[ ${try} -gt 1 ]] && sleep 5
@@ -60,8 +58,8 @@ echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Prepare helm ..." >> /startup-script-sta
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install gcloud & helm ..." >> /startup-script-status.log
-apt update && apt install helm google-cloud-cli -y
+echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install gcloud, helm, kubectl ..." >> /startup-script-status.log
+apt update && apt install helm google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
 # Add global env variable
