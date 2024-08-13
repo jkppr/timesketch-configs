@@ -59,7 +59,7 @@ curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install gcloud, helm, kubectl ..." >> /startup-script-status.log
-apt update && apt install helm google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y
+apt update && apt install helm google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y 2>&1 >> /startup-script-status.log
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
 # Add global env variable
