@@ -25,7 +25,8 @@ err() {
 }
 
 install_packages() {
-  apt -y install ${packages[@]}
+  apt-get -y install ${packages[@]} 2>&1 >> /startup-script-status.log
+  return $?
 }
 
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Starting startup script ..." >> /startup-script-status.log
@@ -37,10 +38,15 @@ echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
 # Try to install the packages
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install default packages ..." >> /startup-script-status.log
+exit_code=1
 for try in $(seq 1 ${max_retry}); do
   [[ ${try} -gt 1 ]] && sleep 5
-  install_packages && exit_code=0 && break || exit_code=$?
-  err "Failed to install packages, retrying in 5 seconds."
+  if install_packages; then
+    exit_code=0
+    break
+  else
+    err "[$try/$max_retry] Failed to install packages, retrying in 5 seconds."
+  fi
 done;
 echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
