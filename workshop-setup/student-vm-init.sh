@@ -4,9 +4,10 @@
 # The script will install everything necessary to participate in the
 # cloud forensics workshop.
 
-max_retry=100
+max_retry=10
+logfile="/startup-script-status.log"
 
-# Default packages to install
+# Packages to install via apt. Note that 'helm' has been removed.
 packages=(
   tmux
   python3-pip
@@ -17,57 +18,62 @@ packages=(
   sudo
   git
   python3-poetry
+  google-cloud-cli
+  google-cloud-sdk-gke-gcloud-auth-plugin
+  kubectl
 )
 
-err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >> /startup-script-status.log
+log() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >> "${logfile}"
 }
 
-install_packages() {
-  apt-get -y install ${packages[@]} 2>&1 >> /startup-script-status.log
+install_apt_packages() {
+  # The DEBIAN_FRONTEND=noninteractive is important to prevent
+  # prompts that would hang the script.
+  DEBIAN_FRONTEND=noninteractive apt-get -y install "${packages[@]}" 2>&1 >> "${logfile}"
   return $?
 }
 
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Starting startup script ..." >> /startup-script-status.log
+log "Starting startup script ..."
 
-# Update VM
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Update the VM ..." >> /startup-script-status.log
-apt update && apt upgrade -y
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
+# --- APT Repository Setup ---
+log "Adding Google Cloud APT repository..."
+curl -sS https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
 
-# Try to install the packages
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install apt packages ..." >> /startup-script-status.log
+# --- APT Package Installation ---
+log "Updating package lists and installing APT packages..."
 exit_code=1
 for try in $(seq 1 ${max_retry}); do
-  [[ ${try} -gt 1 ]] && sleep 5
-  if install_packages; then
+  log "[$try/$max_retry] Attempting to update and install..."
+  apt-get update 2>&1 >> "${logfile}"
+  if install_apt_packages; then
     exit_code=0
+    log "Successfully installed all APT packages."
     break
   else
-    err "[$try/$max_retry] Failed to install packages, retrying in 5 seconds."
+    log "[$try/$max_retry] Failed to install APT packages. Retrying in 15 seconds."
+    sleep 15
   fi
 done;
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
 
-# Install gcloud
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Prepare gcloud ..." >> /startup-script-status.log
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+if [ ${exit_code} -ne 0 ]; then
+    log "CRITICAL: Could not install APT packages after ${max_retry} attempts."
+fi
 
-# Install helm
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Prepare helm ..." >> /startup-script-status.log
-curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+# --- Install Helm ---
+log "Installing Helm using the official script..."
+if curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash &>> "${logfile}"; then
+  log "Helm installed successfully."
+else
+  log "CRITICAL: Failed to install Helm."
+  exit_code=1 # Mark the script as failed if Helm is critical
+fi
 
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Install gcloud, helm, kubectl ..." >> /startup-script-status.log
-apt update && apt install helm google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y 2>&1 >> /startup-script-status.log
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: DONE" >> /startup-script-status.log
-
-# Add global env variable
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Add global env vars ..." >> /startup-script-status.log
+# --- Environment Setup ---
+log "Adding global environment variables..."
 echo "export DFTIMEWOLF_NO_CURSES=1" > /etc/profile.d/workshop-env.sh
+log "DONE"
 
-# DONE
-echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: Startup script finished!" >> /startup-script-status.log
-
+log "Startup script finished!"
 (exit ${exit_code})
